@@ -2,8 +2,6 @@
 
 O esquema garante o formato; estas regras conferem se os valores fazem sentido juntos.
 Uma nota com qualquer problema vai para revisão humana.
-
-A função data_em_fim_de_semana é uma regra nova: ela entra em conferir() e marca para revisão humana as notas de sábado ou domingo.
 """
 from datetime import datetime
 
@@ -11,11 +9,6 @@ from src.esquemas import NotaFiscal
 
 LIMITE_REVISAO = 5000.00     # acima deste valor, alguém confere mesmo que tudo pareça certo
 TOLERANCIA = 0.05            # diferença aceitável entre o total e a soma dos itens (arredondamentos)
-
-
-def data_em_fim_de_semana(data: datetime) -> bool:
-    """Recebe uma data e devolve True se ela cai em sábado ou domingo."""
-    return data.weekday() >= 5      # segunda = 0 ... sábado = 5, domingo = 6
 
 
 def conferir(nota: NotaFiscal) -> list[str]:
@@ -29,7 +22,7 @@ def conferir(nota: NotaFiscal) -> list[str]:
         data = datetime.strptime(nota.data or "", "%d/%m/%Y")
         if data > datetime.now():
             problemas.append("data no futuro")
-        if data_em_fim_de_semana(data):
+        if data.weekday() >= 5:
             problemas.append("data em fim de semana: revisar")
     except ValueError:
         problemas.append("data ausente ou inválida")
