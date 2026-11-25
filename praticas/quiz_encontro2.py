@@ -5,7 +5,7 @@ Preencha os campos abaixo e rode:
 As perguntas estão em praticas/QUIZ.md.
 """
 
-ALUNO = "Tales Rodrigo Ferreira Kerschner"   # seu nome completo
+ALUNO = "Tales Rodrigo Ferreira Kerschner e Tiago Rafael Ferreira Kerschner"   # seu nome completo
 MATRICULA = ""        # opcional
 
 # Trabalho Orientado: comece a pensar no tema. Uma ou duas frases bastam por enquanto.
