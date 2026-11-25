@@ -7,16 +7,23 @@ Este é um projeto acadêmico de aplicação multimodal com LLMs (PUC Minas). Si
 - Nunca altere o `.gitignore` para remover `.env`, `logs/` ou `dados/privados/`.
 - Toda chamada a um modelo passa por `src/cliente.py` (`chamar_modelo`). Não crie clientes da OpenAI, Groq ou Gemini em outros arquivos: é ali que estão a retentativa, o provedor reserva, o cache e o registro de uso.
 - Não envie dados pessoais (CPF, endereço, documentos de terceiros) para APIs de plano gratuito.
+- As interfaces em `app/` não têm lógica de negócio: elas só chamam funções de `src/`. Nada de chamar o modelo direto de dentro da interface.
+- Nunca guarde o histórico de conversa em variável global num app Gradio: ela seria compartilhada entre usuários. Use o histórico que o Gradio entrega à função ou `gr.State`.
 
 ## Organização
 - `src/config.py`: provedores, modelos, preços e leitura das chaves.
-- `src/cliente.py`: chamadas ao modelo.
+- `src/cliente.py`: chamadas ao modelo (`chamar_modelo`, `chamar_modelo_stream`, `transcrever`).
+- `src/contexto.py`: memória da conversa (histórico, janela, resumo) e leitura do histórico do Gradio.
+- `src/documentos.py`: PDFs (texto extraído ou página como imagem).
+- `src/audio.py`: transcrição e síntese de fala.
 - `src/midia.py`: preparação de imagens (redução, recorte, marcas).
 - `src/esquemas.py`: classes Pydantic das respostas estruturadas.
 - `src/validacao.py`: regras de negócio sobre as respostas.
 - `src/uso.py`: registro de tokens, latência e custo.
 - `prompts/`: prompts versionados em Markdown, com as seções `## sistema` e `## usuario`.
 - `praticas/`: scripts das aulas. Rode sempre a partir da raiz: `python praticas/<arquivo>.py`.
+- `app/`: interfaces em Gradio (`python app/<arquivo>.py`) e em Streamlit (`streamlit run app/<arquivo>_streamlit.py`), sempre a partir da raiz.
+- No Streamlit, o script inteiro reexecuta a cada interação: estado que precisa sobreviver vai para `st.session_state`, nunca para variáveis do módulo.
 
 ## Estilo
 - Python 3.10 ou mais novo, com type hints simples.

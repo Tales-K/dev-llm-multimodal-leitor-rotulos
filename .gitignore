@@ -11,6 +11,8 @@ __pycache__/
 # Saídas geradas e dados privados
 logs/
 dados/privados/
+dados/saidas/
+.gradio/
 
 # Sistema operacional e editores
 .DS_Store

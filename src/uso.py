@@ -1,8 +1,8 @@
-"""Registro de uso: uma linha por chamada em logs/uso.csv (Encontro 2, bloco 2.3)."""
+"""Registro de uso: uma linha por chamada em logs/uso.csv (Encontro 2, bloco 2.3; áudio no Encontro 3)."""
 import csv
 from datetime import datetime
 
-from src.config import PASTA_LOGS, PRECOS
+from src.config import PASTA_LOGS, PRECOS, PRECOS_AUDIO
 
 ARQUIVO = PASTA_LOGS / "uso.csv"
 COLUNAS = ["quando", "provedor", "modelo", "tok_entrada", "tok_saida", "latencia_s", "custo_usd", "status", "etiqueta"]
@@ -14,8 +14,19 @@ def custo(provedor, tok_entrada, tok_saida):
     return (tok_entrada * p_in + tok_saida * p_out) / 1_000_000
 
 
-def registrar(provedor, modelo, tok_entrada, tok_saida, latencia, status="ok", etiqueta=""):
-    """Acrescenta uma linha ao arquivo de uso. Cria o arquivo com cabeçalho na primeira vez."""
+def custo_audio(provedor, segundos):
+    """Transcrição: preço por hora de áudio, com o mínimo de 10 segundos cobrado por pedido."""
+    if not segundos:
+        return 0.0
+    return max(segundos, 10) / 3600 * PRECOS_AUDIO.get(provedor, 0.0)
+
+
+def registrar(provedor, modelo, tok_entrada, tok_saida, latencia, status="ok", etiqueta="", segundos_audio=None):
+    """Acrescenta uma linha ao arquivo de uso. Cria o arquivo com cabeçalho na primeira vez.
+
+    Para transcrições, informe segundos_audio: o custo passa a ser calculado por tempo de áudio.
+    """
+    valor = custo_audio(provedor, segundos_audio) if segundos_audio else custo(provedor, tok_entrada, tok_saida)
     PASTA_LOGS.mkdir(exist_ok=True)
     novo = not ARQUIVO.exists()
     with open(ARQUIVO, "a", newline="", encoding="utf-8") as f:
@@ -23,7 +34,7 @@ def registrar(provedor, modelo, tok_entrada, tok_saida, latencia, status="ok", e
         if novo:
             w.writerow(COLUNAS)
         w.writerow([datetime.now().isoformat(timespec="seconds"), provedor, modelo, tok_entrada, tok_saida,
-                    round(latencia, 2), f"{custo(provedor, tok_entrada, tok_saida):.6f}", status, etiqueta])
+                    round(latencia, 2), f"{valor:.6f}", status, etiqueta])
 
 
 def resumo():

@@ -10,3 +10,5 @@ Extraia da imagem o emitente, a data (DD/MM/AAAA), o valor total e os itens com 
 As notas são de estabelecimentos comerciais; o total aparece no rodapé.
 A data da compra costuma ficar no topo, perto do CNPJ e da hora, e às vezes se repete no rodapé. Devolva só a data, sem a hora.
 O emitente é o nome do estabelecimento no topo (razão social ou nome fantasia).
+Liste todas as linhas de produto entre o cabeçalho dos itens e o total, inclusive linhas sem número de item ou sem código.
+Quando a linha traz quantidade x preço unitário, o valor do item é o total da linha, na coluna da direita.

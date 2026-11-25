@@ -6,19 +6,31 @@ Campos "X | None" permitem que o modelo diga "não encontrei" (null), em vez de 
 """
 import re
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
 
+# Nomes alternativos aceitos na leitura (validation_alias). Sem o JSON Schema (níveis 2 e 3 do cliente), o modelo
+# às vezes escolhe outro nome de chave, como "items" ou "preco". Sem os aliases, o Pydantic ignoraria a chave
+# desconhecida e a lista de itens viria vazia, sem nenhum erro. O nome principal continua sendo o primeiro.
 class Item(BaseModel):
-    descricao: str
-    valor: float | None = Field(description="valor do item em reais, número com ponto decimal")
+    model_config = ConfigDict(extra="forbid")   # chave desconhecida = erro de validação (nada some em silêncio)
+
+    descricao: str = Field(description="descrição do produto, como aparece no cupom",
+                           validation_alias=AliasChoices("descricao", "descrição", "produto", "nome"))
+    valor: float | None = Field(description="valor total da linha do item em reais, número com ponto decimal",
+                                validation_alias=AliasChoices("valor", "preco", "preço", "valor_item", "total"))
 
 
 class NotaFiscal(BaseModel):
+    # extra="forbid": se o modelo inventar uma chave (ex.: "itens_com_valor"), a validação falha e o cliente
+    # devolve o erro ao modelo pedindo a correção (src/cliente.py), em vez de aceitar a nota sem itens.
+    model_config = ConfigDict(extra="forbid")
+
     emitente: str | None = Field(description="nome do estabelecimento, como aparece no topo")
     data: str | None = Field(description="data da compra no formato DD/MM/AAAA, sem a hora")
     valor_total: float | None = Field(description="valor total em reais, número com ponto decimal")
-    itens: list[Item] = Field(default_factory=list, description="itens comprados, na ordem do cupom")
+    itens: list[Item] = Field(default_factory=list, description="todos os itens comprados, na ordem do cupom",
+                              validation_alias=AliasChoices("itens", "items", "produtos"))
 
     @field_validator("data", mode="before")
     @classmethod
@@ -41,5 +53,5 @@ class NotaFiscal(BaseModel):
             if len(ano) == 2:
                 ano = "20" + ano
         else:
-            return texto or None
+            return None   # nada parecido com uma data (ex.: "data-nota-fiscal"): vira null e vai para revisão humana
         return f"{int(dia):02d}/{int(mes):02d}/{ano}"
